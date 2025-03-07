@@ -1,0 +1,46 @@
+# My reading app
+
+## första iden
+
+Hej, jag skapar en läs app till mina barn med flutter, den är för en android tablet. Den kommer ha 6 alternativ att välja på, 'Läsläxa', 'förståelse', 'skriva', 'alfabet', 'para ihop', 'ord'. Jag behöver hjälp med att komma på vad och få tips, på hur 'Läsläxa' skall se ut och byggas. Det jag hade tänkt med 'Läsläxa' var, att man kan lägga in, antingen i hemskärmen eller när man valt 'Läsläxa' i spel menyn, foto man tagit, på barnens bok, som dom läser i skolan, sedan kan man swipe så att den bytas sida. Tex, man fotar kapitel 1, som tex har 5 sidor, man skall kunna enkelt markera Kapitel och sida i det kapitlet, på dom foto man tagit, så när man är i 'Läsläxa' så kan man välja kapitel, sedan så börjar man på den sidan som kapitalet börjar med. 
+
+-------------------------------------------------------------------
+## Läsläxa.
+
+idéer och steg
+
+1. Två huvudsakliga lägen
+	•	Skapa / Annotera läslektion: Här får föräldrar eller barnen lägga in ett foto (från kamera eller galleri) av bokens kapitel och sedan markera vilka sidor som ingår.
+	•	Läsläge: Här väljer barnet ett kapitel från en lista, och appen öppnar den första sidan som är registrerad för just det kapitlet. Därefter kan man swipa mellan sidorna.
+
+2. Skapa ett användarvänligt gränssnitt för annotering
+	•	Bildvisning med verktyg: När ett foto laddats in kan du erbjuda en överlagrad widget där användaren enkelt kan markera start- och slutpunkter för ett kapitel. Tänk på att göra detta intuitivt – kanske med en enkel “dra för att markera” eller klicka på specifika områden.
+	•	Spara metadata: Varje bild (eller kapitel) bör kopplas till metadata, t.ex. kapitelnummer, antalet sidor, och sidindelning. Använd en lokal databas (t.ex. SQFlite) eller JSON-fil för att spara denna information.
+
+3. Implementera swiping mellan sidorna
+	•	PageView Widget: Flutter’s PageView är perfekt för att låta användare swipa mellan sidor. Du kan dynamiskt bygga sidor baserat på den metadata du sparat.
+
+PageView.builder(
+  itemCount: antalSidor,
+  itemBuilder: (context, index) {
+    return Image.file(File(sidaPaths[index])); // eller Image.asset om du använder lokala resurser
+  },
+)
+
+	•	Navigering: Vid start av ett kapitel, starta PageView på den första sidan som markerats för kapitlet. Du kan använda ett navigeringssystem (t.ex. Navigator.push) för att öppna läsläxa-läget.
+
+4. Förslag på bildhantering och redigering
+	•	Bilder och redigering: Använd paket som image_picker för att ta foton eller välja från galleri. Om du vill erbjuda enklare bildredigering (ex. beskärning) kan image_cropper vara användbart.
+	•	Responsiv design: Se till att gränssnittet anpassar sig till olika skärmstorlekar på Android-tablet.
+
+5. Steg-för-steg utvecklingsprocess
+	1.	Skärm för fotouppladdning: Skapa en skärm där användaren kan välja att ta ett foto eller välja ett befintligt foto.
+	2.	Annoteringsläge: Efter att ha laddat in fotot, visa det med överlagrade verktyg för att markera kapitel och sidindelning.
+	3.	Metadata-lagring: Spara användarens markeringar i en lokal databas eller fil.
+	4.	Läsläge: Skapa en meny där barnen kan välja kapitel. När ett kapitel valts, öppna en PageView som visar bilderna i rätt ordning.
+	5.	Test och förbättra: Låt barnen prova och justera användarupplevelsen baserat på feedback.
+
+6. Extra tips
+	•	Intuitiv navigation: Använd stora, tydliga knappar och gärna visuella ledtrådar (som färgade markeringar) för att visa var ett kapitel börjar/slutar.
+	•	Spara användarinställningar: Om en användare gör ändringar (ex. flyttar på kapitelmarkeringen) bör dessa sparas direkt så att de inte behöver göras om varje gång.
+	•	Använda state management: För att hantera appens tillstånd kan du använda något lättviktigt som Provider eller Riverpod så att data mellan skärmar synkroniseras smidigt.
