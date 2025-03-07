@@ -4,6 +4,8 @@
 *.pyc
 *.swp
 .DS_Store
+.AppleDouble
+.LSOverride
 .atom/
 .build/
 .buildlog/
@@ -17,6 +19,10 @@ migrate_working_dir/
 *.ipr
 *.iws
 .idea/
+android/local.properties
+ios/Flutter/Generated.xcconfig
+ios/.symlinks/
+ios/Pods/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -32,6 +38,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+.packages
+generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +51,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Test and debugging
+test/**/golden/**.png
+crashlytics-build-id
+
+# Flutter Web
+web/.dart_tool/
