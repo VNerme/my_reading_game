@@ -6,7 +6,8 @@ class MusicController {
   MusicController._internal();
 
   bool isMuted = false;
-  int currentTrackIndex = 0; // Håller koll på vilken låt som spelas
+  bool isPlaying = false; // Track if music is playing
+  int currentTrackIndex = 0;
 
   final List<String> playlist = [
     '01OneSummersDay.mp3',
@@ -14,43 +15,61 @@ class MusicController {
     '03AdventureBegins.mp3',
   ];
 
-  // Starta musiken
+  // Start or resume music
   Future<void> playMusic({bool restart = false}) async {
     if (!isMuted) {
       if (restart) {
-        stopMusic(); // Stoppa och starta om
+        await FlameAudio.bgm.stop();
       }
-      FlameAudio.bgm.play(playlist[currentTrackIndex], volume: 1);
+      await FlameAudio.bgm.play(playlist[currentTrackIndex], volume: 1);
+      isPlaying = true;
     }
   }
 
-  // Stoppa musiken
-  void stopMusic() {
-    FlameAudio.bgm.stop();
+  // Pause music
+  Future<void> pauseMusic() async {
+    if (isPlaying) {
+      await FlameAudio.bgm.pause();
+      isPlaying = false;
+    }
   }
 
-  // Växla mute-status
-  void toggleMute() {
+  // Resume music only if it was playing before
+  Future<void> resumeMusic() async {
+    if (!isMuted && !isPlaying) {
+      await FlameAudio.bgm.resume();
+      isPlaying = true;
+    }
+  }
+
+  // Toggle mute without restarting the track
+  Future<void> toggleMute() async {
     isMuted = !isMuted;
     if (isMuted) {
-      stopMusic();
+      await pauseMusic();
     } else {
-      playMusic(restart: false); // Starta om musiken vid mute-off
+      await resumeMusic();
     }
   }
 
-  // Byt till nästa låt
-  void nextTrack() {
+  // Next track
+  Future<void> nextTrack() async {
     currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-    playMusic(restart: true);
+    await playMusic(restart: true);
   }
 
-  // Byt till föregående låt
-  void previousTrack() {
+  // Previous track
+  Future<void> previousTrack() async {
     currentTrackIndex = (currentTrackIndex - 1) % playlist.length;
     if (currentTrackIndex < 0) {
       currentTrackIndex = playlist.length - 1;
     }
-    playMusic(restart: true);
+    await playMusic(restart: true);
+  }
+
+  // Stop music completely
+  Future<void> stopMusic() async {
+    await FlameAudio.bgm.stop();
+    isPlaying = false;
   }
 }

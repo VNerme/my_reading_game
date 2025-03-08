@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Nu används korrekt
-import 'package:my_reading_game/ui/letter_painter.dart';
-import 'package:my_reading_game/constants/alph_const.dart'; // Uppdaterad import
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_reading_game/widgets/letter_background.dart';
+import 'package:my_reading_game/widgets/semi_transparent_letter.dart';
+import 'package:my_reading_game/widgets/letter_drawing_area.dart';
+import 'package:my_reading_game/data/swedish_alphabet.dart';
+import 'package:my_reading_game/widgets/mute_button.dart'; // Added import
 
 class AlphabetGameScreen extends StatefulWidget {
   final String selectedLetter;
@@ -14,14 +17,14 @@ class AlphabetGameScreen extends StatefulWidget {
 }
 
 class AlphabetGameScreenState extends State<AlphabetGameScreen> {
-  final List<Offset> _points = [];
+  final List<Offset> points = [];
   late String currentLetter;
   FlutterTts flutterTts = FlutterTts();
 
   @override
   void initState() {
     super.initState();
-    currentLetter = widget.selectedLetter; // Sätt ett initialt värde
+    currentLetter = widget.selectedLetter;
     _loadSavedLetter();
   }
 
@@ -39,7 +42,7 @@ class AlphabetGameScreenState extends State<AlphabetGameScreen> {
 
   void _clearDrawing() {
     setState(() {
-      _points.clear();
+      points.clear();
     });
   }
 
@@ -52,33 +55,31 @@ class AlphabetGameScreenState extends State<AlphabetGameScreen> {
         _clearDrawing();
       });
 
-      await _saveCurrentLetter(); // Spara bokstaven här
+      await _saveCurrentLetter();
       await flutterTts.speak(currentLetter);
     }
   }
 
+  void _resetProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove("savedLetter");
+    setState(() {
+      currentLetter = "A";
+      _clearDrawing();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("Current letter: $currentLetter");
-    double screenHeight = MediaQuery.of(context).size.height;
-    double fontSize = screenHeight * 0.5;
-
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(),
+        leading: const BackButton(),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           TextButton(
-            onPressed: () async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.remove("savedLetter"); // Raderar sparad bokstav
-              setState(() {
-                currentLetter = "A"; // Startar om från A
-                _clearDrawing();
-              });
-            },
-            child: Text(
+            onPressed: _resetProgress,
+            child: const Text(
               "Återställ",
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
@@ -87,68 +88,35 @@ class AlphabetGameScreenState extends State<AlphabetGameScreen> {
       ),
       body: Stack(
         children: [
-          // Dynamisk bakgrundsbild baserat på vald bokstav
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                    letterImages[currentLetter] ?? letterImages["A"]!,
-                  ),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-
-          // Halvgenomskinlig bokstav i mitten
-          Center(
-            child: Opacity(
-              opacity: 0.3,
-              child: Text(
-                currentLetter,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-
-          // Ritningsområde
-          GestureDetector(
-            onPanUpdate: (details) {
+          LetterBackground(letter: currentLetter),
+          SemiTransparentLetter(letter: currentLetter),
+          LetterDrawingArea(
+            points: points,
+            onDrawingUpdate: (Offset localPosition) {
               setState(() {
-                RenderBox object = context.findRenderObject() as RenderBox;
-                Offset localPosition = object.globalToLocal(
-                  details.globalPosition,
-                );
-
-                if (_isInsideLetterShape(localPosition)) {
-                  if (_points.isEmpty ||
-                      (localPosition - _points.last).distance > 5) {
-                    _points.add(localPosition);
-                  }
+                if (_pointsCondition(localPosition)) {
+                  points.add(localPosition);
                 }
               });
             },
-            onPanEnd: (details) async {
-              if (_points.length > 20) {
+            onDrawingEnd: () async {
+              if (points.length > 20) {
                 await flutterTts.speak(currentLetter);
                 _nextLetter();
               }
             },
-            child: SizedBox.expand(
-              child: CustomPaint(painter: LetterPainter(_points)),
-            ),
           ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: const MuteButton(),
+          ), // Added MuteButton her),
         ],
       ),
     );
   }
 
-  bool _isInsideLetterShape(Offset point) {
-    return true; // Ersätt detta med en faktisk formkontroll.
+  bool _pointsCondition(Offset localPosition) {
+    return points.isEmpty || (localPosition - points.last).distance > 5;
   }
 }

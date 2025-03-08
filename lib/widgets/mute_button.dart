@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import '../utils/music_controller.dart';
 
-// Skapa en global instans (om det inte finns en bättre central hantering)
 final MusicController musicController = MusicController();
 
 class MuteButton extends StatefulWidget {
   const MuteButton({super.key});
 
   @override
-  MuteButtonState createState() => MuteButtonState();
+  MuteButtonState createState() => MuteButtonState(); // Changed `_MuteButtonState` to `MuteButtonState`
 }
 
 class MuteButtonState extends State<MuteButton> {
+  // Changed `_MuteButtonState` to `MuteButtonState`
   @override
   Widget build(BuildContext context) {
     return IconButton(

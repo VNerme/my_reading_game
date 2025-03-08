@@ -65,7 +65,8 @@ flutter:
 
   assets:
     - assets/audio/01OneSummersDay.mp3
-    - assets/images/home_bg.png
+    - assets/images/backgrounds/home_bg.png
+    - assets/images/backgrounds/game_bg.png
     - assets/fonts/Pacifico-Regular.ttf
     - assets/images/icons/sound_icon.png
     - assets/images/icons/mute_icon.png
